@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>20/10 - Một chương trình nhỏ cho Nhân</title>
+<style>
+:root{
+  --bg:#08111f;--panel:#0f172a;--panel2:#111827;--line:#1f2937;
+  --green:#34d399;--cyan:#22d3ee;--pink:#fb7185;--rose:#f43f5e;--gold:#fde68a;
+  --text:#e5e7eb;--muted:#9ca3af;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;overflow:hidden;font-family:Consolas,Monaco,'Courier New',monospace;
+background:radial-gradient(circle at top right,#172554 0,transparent 28%),
+           radial-gradient(circle at bottom left,#4c0519 0,transparent 24%),
+           linear-gradient(135deg,#030712,#0b1120 45%,#111827);color:var(--text)}
+.hidden{display:none!important}
+.center{min-height:100vh;display:grid;place-items:center;padding:20px}
+.terminal{width:min(920px,94vw);background:rgba(2,6,23,.92);border:1px solid #334155;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.45);overflow:hidden}
+.bar{height:44px;background:#111827;border-bottom:1px solid #1f2937;display:flex;align-items:center;gap:9px;padding:0 16px}
+.dot{width:12px;height:12px;border-radius:50%}.r{background:#fb7185}.y{background:#fcd34d}.g{background:#34d399}
+.title{margin-left:10px;color:#94a3b8;font-size:14px}
+.screen{padding:24px;min-height:460px;position:relative}
+#code{white-space:pre-wrap;line-height:1.72;font-size:16px;color:#cbd5e1;margin:0}
+.green{color:var(--green)} .cyan{color:var(--cyan)} .pink{color:#f9a8d4} .muted{color:var(--muted)}
+.cursor{display:inline-block;width:10px;height:1.1em;background:var(--green);vertical-align:-2px;animation:blink .95s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.terminal-tip{margin-top:16px;color:#64748b;font-size:13px}
+.enter-box{margin-top:22px;display:none;animation:fadeIn .6s ease forwards}
+.btn{border:0;border-radius:999px;padding:12px 20px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700}
+.btn-run{background:linear-gradient(90deg,#22c55e,#06b6d4);color:#052e16;box-shadow:0 10px 30px rgba(34,197,94,.25)}
+.btn-run:hover{transform:translateY(-1px)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.gift-scene{position:relative;text-align:center;min-height:100vh;display:grid;place-items:center;padding:20px;background:
+ radial-gradient(circle at 15% 15%,#ffe4e6 0,transparent 18%),
+ radial-gradient(circle at 85% 85%,#fbcfe8 0,transparent 23%),
+ linear-gradient(145deg,#fff7ed,#fff1f2 58%,#fce7f3);font-family:'Segoe UI',Arial,sans-serif;color:#881337;overflow:hidden}
+.wrap{position:relative;text-align:center;padding:28px 18px;width:min(92vw,560px);z-index:3}
+h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px;letter-spacing:.2px}.subtitle{color:#9d174d;font-size:16px;margin:8px 0 34px}
+.gift{width:210px;height:240px;margin:0 auto 27px;position:relative;cursor:pointer;outline:none;filter:drop-shadow(0 23px 19px #9d174d30);transition:transform .3s}
+.gift:hover,.gift:focus-visible{transform:translateY(-9px) rotate(-2deg)}
+.box{position:absolute;width:180px;height:150px;bottom:0;left:15px;background:linear-gradient(135deg,#fb7185,#e11d48);border-radius:7px 7px 13px 13px;box-shadow:inset -12px -7px #be123c55}
+.box:before{content:'';position:absolute;width:34px;height:100%;left:73px;background:var(--gold)}
+.lid{position:absolute;left:3px;top:70px;width:204px;height:48px;background:linear-gradient(140deg,#fda4af,#f43f5e);border-radius:8px;z-index:4;box-shadow:0 6px 0 #be123c44;transform-origin:85% 85%;transition:transform 1.2s cubic-bezier(.18,.7,.3,1),opacity .9s}
+.lid:after{content:'';position:absolute;height:100%;width:35px;background:#fef08a;left:85px}
+.bow{position:absolute;z-index:5;top:19px;left:55px;width:100px;height:60px;transition:transform 1.2s,opacity .9s}.bow:before,.bow:after{content:'';position:absolute;width:48px;height:48px;border:14px solid #facc15;border-radius:50% 50% 12% 50%;top:8px}.bow:before{left:4px;transform:rotate(-35deg)}.bow:after{right:4px;transform:rotate(125deg)}
+.knot{position:absolute;left:42px;top:27px;width:19px;height:19px;border-radius:50%;background:#fef08a;z-index:6}
+.gift.open .lid{transform:translate(-65px,-150px) rotate(-30deg);opacity:0}.gift.open .bow{transform:translate(-65px,-150px) rotate(-30deg);opacity:0}
+.hint{font-size:14px;color:#be185d;animation:pulse 1.6s infinite}
+.message{display:none;animation:appear 1s both;margin:0 auto;max-width:500px;background:#ffffffbf;backdrop-filter:blur(10px);border:1px solid #fff;padding:25px 25px 22px;border-radius:24px;box-shadow:0 15px 50px #9d174d18}
+.message h2{font-size:clamp(23px,5vw,33px);color:#be185d;margin:0 0 14px}.message p{line-height:1.8;margin:8px 0;font-size:17px}.signature{text-align:right;font-style:italic;font-weight:600;color:#be185d;margin-top:20px!important}.flower{font-size:48px;margin-bottom:8px}.again{background:#be185d;color:#fff}.again:hover{background:#9d174d}
+.particle{position:fixed;z-index:2;pointer-events:none;animation:floatUp var(--dur) linear forwards;font-size:var(--size);left:var(--x);top:105vh}
+.sparkle{position:fixed;pointer-events:none;opacity:.55;font-size:20px;animation:twinkle 3s infinite alternate}
+@keyframes pulse{50%{opacity:.45}} @keyframes appear{from{opacity:0;transform:translateY(30px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes floatUp{to{transform:translate(var(--drift),-120vh) rotate(370deg);opacity:0}} @keyframes twinkle{to{opacity:1;transform:scale(1.35)}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Âm thanh và khóa bí mật */
+.sound-toggle{position:fixed;right:16px;top:16px;z-index:20;border:1px solid #ffffff55;background:#831843e8;color:#fff;padding:10px 15px;border-radius:999px;cursor:pointer;font:600 13px 'Segoe UI',sans-serif;box-shadow:0 5px 18px #0002}
+.lock-overlay{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:#1f0c20a8;backdrop-filter:blur(10px);padding:18px;font-family:'Segoe UI',Arial,sans-serif}
+.lock-overlay.visible{display:flex}
+.lock-dialog{background:linear-gradient(150deg,#fffafa,#fff0f5);border:2px solid #fff;border-radius:24px;padding:30px 25px;width:min(95vw,430px);text-align:center;box-shadow:0 22px 70px #25001560;color:#831843;animation:appear .35s both}
+.lock-dialog h2{margin:0 0 9px;font-size:25px}.lock-dialog p{line-height:1.6}
+.lock-input{width:100%;border:2px solid #fbcfe8;border-radius:14px;padding:14px 12px;font-size:22px;text-align:center;letter-spacing:3px;color:#9d174d;background:#fff;outline:none}
+.lock-input:focus{border-color:#db2777}.lock-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.lock-actions button{border:0;padding:12px 20px;border-radius:999px;cursor:pointer;font-size:14px;font-weight:600}
+.unlock-btn{background:#be185d;color:#fff}.cancel-btn{background:#fce7f3;color:#831843}.lock-feedback{min-height:22px;color:#be123c;font-size:14px;margin-top:10px}
+.lock-hint{font-size:14px;color:#9d174d}
+</style>
+</head>
+<body>
+<button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false">🔇 Bật nhạc</button>
+<div class="lock-overlay" id="lockOverlay" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="lock-dialog">
+    <div style="font-size:40px">🔐 💗</div>
+    <h2 id="lockTitle">Một mật mã nhỏ dành cho Nhân</h2>
+    <p>Hộp quà này được khóa bằng một kỷ niệm của hai đứa...</p>
+    <p class="lock-hint">💡 Gợi ý: Ngày chúng mình đi chơi ở Đại học Công nghệ Tokyo (nhập <strong>DDMM</strong>).</p>
+    <form id="unlockForm">
+      <input id="passwordInput" class="lock-input" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="••••" aria-label="Mật mã ngày tháng" required>
+      <div id="lockFeedback" class="lock-feedback" aria-live="polite"></div>
+      <div class="lock-actions"><button class="unlock-btn" type="submit">🔓 Mở khóa kỷ niệm</button><button class="cancel-btn" type="button" id="lockCancel">Để sau nhé</button></div>
+    </form>
+  </div>
+</div>
+<section id="terminalScene" class="center">
+  <div class="terminal">
+    <div class="bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <div class="title">nhan_2010.exe — terminal</div>
+    </div>
+    <div class="screen">
+      <pre id="code"></pre><span id="cursor" class="cursor"></span>
+      <div class="enter-box" id="enterBox">
+        <button class="btn btn-run" id="runBtn">▶ Run surprise_for_nhan()</button>
+      </div>
+      <div class="terminal-tip">Terminal chạy xong mới mở quà 🌷</div>
+    </div>
+  </div>
+</section>
+
+<section id="giftScene" class="gift-scene hidden">
+  <div class="wrap">
+    <section id="start">
+      <h1>🎀 Build thành công một món quà cho <span id="recipientIntro"></span>!</h1>
+      <p class="subtitle">Phiên bản đặc biệt nhân ngày Phụ nữ Việt Nam 20/10 💗</p>
+      <div id="gift" class="gift" role="button" tabindex="0" aria-label="Nhấn để mở hộp quà">
+        <div class="bow"><div class="knot"></div></div><div class="lid"></div><div class="box"></div>
+      </div>
+      <div class="hint">✨ Click vào hộp quà để mở kết quả chạy chương trình ✨</div>
+    </section>
+    <section id="message" class="message" aria-live="polite">
+      <div class="flower">💐</div>
+      <h2>Happy Women's Day, <br> <span id="recipientCard"></span>!</h2>
+      <p id="wish"></p>
+      <p class="signature">— <span id="sender"></span> 💌</p>
+      <button class="btn again" id="again">↻ Run lại chương trình</button>
+    </section>
+  </div>
+</section>
+
+<script>
+// ===== CHỈNH THÔNG TIN MÓN QUÀ Ở ĐÂY =====
+const TEN_NGUOI_NHAN = 'Tòng Thị Nhân';
+const TEN_NGUOI_GUI = 'Một người vừa code vừa nghĩ đến em';
+const MAT_KHAU_KY_NIEM = '1010'; // Ngày 10 tháng 10 (DDMM), không cần năm
+const LOI_CHUC = 'Chúc Nhân ngày 20/10 thật vui, luôn rạng rỡ và gặp nhiều điều dễ thương. Anh nghĩ thay vì gửi một câu chúc quen thuộc, anh thử viết một chương trình nhỏ dành riêng cho em. Hộp quà này được vẽ bằng code, nhưng lời chúc bên trong thì hoàn toàn là thật. Mong Nhân luôn có nhiều lý do để mỉm cười. Và nếu có thể, anh cũng hy vọng sẽ có thêm nhiều dịp trò chuyện, để hiểu Nhân hơn từng chút một. 🌷';
+// ========================================
+
+const lines = [
+  '<span class="green">user@heart</span>:<span class="cyan">~</span>$ python surprise_for_nhan.py',
+  '<span class="muted"># Importing modules...</span>',
+  'import <span class="pink">care</span>, <span class="pink">sincerity</span>, <span class="pink">courage</span>',
+  '',
+  '<span class="muted"># Initializing target...</span>',
+  'recipient = "' + TEN_NGUOI_NHAN + '"',
+  'occasion  = "Ngày Phụ nữ Việt Nam 20/10"',
+  '',
+  '<span class="muted"># Compiling feelings...</span>',
+  'gift_box   = build(kind="sweet", style="IT", trust="gentle")',
+  'message    = generate(warmth=100, cheesy=0)',
+  '',
+  '<span class="muted"># Running main function...</span>',
+  'def surprise_for_nhan():',
+  '    print("Chúc ' + TEN_NGUOI_NHAN + ' luôn vui vẻ và rạng rỡ ✨")',
+  '    print("Hy vọng chúng mình còn nhiều dịp trò chuyện 🌷")',
+  '    return open_gift_box()',
+  '',
+  '<span class="green">Build completed successfully.</span>',
+  '<span class="green">Gift rendered with pure CSS. No external dependencies.</span>',
+  '<span class="cyan">Ready to execute surprise_for_nhan()</span>'
+];
+
+const codeEl = document.getElementById('code');
+const cursor = document.getElementById('cursor');
+const enterBox = document.getElementById('enterBox');
+let i = 0;
+function typeLines(){
+  if(i >= lines.length){
+    enterBox.style.display = 'block';
+    return;
+  }
+  codeEl.innerHTML += lines[i] + '\n';
+  i++;
+  setTimeout(typeLines, i < 3 ? 520 : (lines[i-1] === '' ? 260 : 430));
+}
+setTimeout(typeLines, 700);
+
+document.getElementById('runBtn').addEventListener('click',()=>{
+  document.getElementById('terminalScene').classList.add('hidden');
+  document.getElementById('giftScene').classList.remove('hidden');
+  try { unlockMusic(); } catch(e) { console.warn('Không phát được nhạc',e); }
+});
+
+document.getElementById('recipientIntro').textContent = TEN_NGUOI_NHAN;
+document.getElementById('recipientCard').textContent = TEN_NGUOI_NHAN;
+document.getElementById('sender').textContent = TEN_NGUOI_GUI;
+document.getElementById('wish').textContent = LOI_CHUC;
+
+const gift=document.getElementById('gift'),start=document.getElementById('start'),card=document.getElementById('message');
+let busy=false; let timers=[];
+// Nhạc tổng hợp bằng Web Audio API: không cần kết nối mạng hay file âm thanh.
+let audioCtx = null, soundOn = false, musicTimer = null, musicStep = 0;
+const melody = [392, 440, 523.25, 440, 392, 329.63, 349.23, 392,
+                440, 523.25, 587.33, 523.25, 440, 392, 349.23, 329.63];
+function contextAudio(){
+  if(!audioCtx){ const C = window.AudioContext || window.webkitAudioContext;
+    if(!C) return null; audioCtx = new C(); }
+  if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+  return audioCtx;
+}
+function note(freq, duration=.18, volume=.035, type='sine'){
+  if(!soundOn) return;
+  const ctx=contextAudio(); if(!ctx) return;
+  const now=ctx.currentTime, osc=ctx.createOscillator(), gain=ctx.createGain();
+  osc.type=type; osc.frequency.setValueAtTime(freq,now);
+  gain.gain.setValueAtTime(.0001,now);
+  gain.gain.exponentialRampToValueAtTime(Math.max(volume,.0002),now+.03);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now+duration+.02);
+}
+function playMusicTick(){
+  if(!soundOn) return;
+  note(melody[musicStep%melody.length],.45,.018);
+  if(musicStep%2===0) note(melody[musicStep%melody.length]/2,.55,.009);
+  musicStep++;
+}
+function setSound(enabled){
+  soundOn=enabled;
+  const toggle=document.getElementById('soundToggle');
+  toggle.textContent=enabled?'🔊 Tắt nhạc':'🔇 Bật nhạc';
+  toggle.setAttribute('aria-pressed',String(enabled));
+  if(musicTimer){clearInterval(musicTimer);musicTimer=null;}
+  if(enabled){contextAudio();playMusicTick();musicTimer=setInterval(playMusicTick,520);}
+}
+document.getElementById('soundToggle').addEventListener('click',()=>setSound(!soundOn));
+// Trình duyệt chỉ cho phát âm thanh sau tương tác của người dùng.
+function unlockMusic(){ if(!soundOn) setSound(true); }
+
+const overlay=document.getElementById('lockOverlay');
+const passwordInput=document.getElementById('passwordInput');
+const lockFeedback=document.getElementById('lockFeedback');
+function promptPassword(){
+  if(busy) return;
+  try { unlockMusic(); } catch(e) { console.warn('Không phát được nhạc',e); }
+  overlay.classList.add('visible');
+  passwordInput.value=''; lockFeedback.textContent='';
+  setTimeout(()=>passwordInput.focus(),80);
+  safeSound(659.25,.16,.045); 
+}
+function closePassword(){overlay.classList.remove('visible');gift.focus();}
+document.getElementById('lockCancel').addEventListener('click',closePassword);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closePassword();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('visible'))closePassword();});
+function safeSound(freq, duration, volume, type){
+  try { note(freq, duration, volume, type); } catch(error) { console.warn('Âm thanh không khả dụng:',error); }
+}
+function verifyGiftPassword(){
+  const normalized = passwordInput.value.normalize('NFKC').replace(/\D/g,'');
+  if(normalized !== MAT_KHAU_KY_NIEM){
+    lockFeedback.textContent = 'Chưa đúng rồi 🌷 Hãy thử ngày 10/10, nhập liền 4 số nhé!';
+    safeSound(220,.23,.035,'triangle');
+    passwordInput.focus();
+    passwordInput.select();
+    return false;
+  }
+  // Mở khóa trước, phát hiệu ứng sau: lỗi âm thanh không thể chặn quà.
+  overlay.classList.remove('visible');
+  lockFeedback.textContent = '';
+  revealGift();
+  safeSound(523.25,.19,.05);
+  setTimeout(()=>safeSound(659.25,.25,.05),150);
+  setTimeout(()=>safeSound(783.99,.5,.05),310);
+  return true;
+}
+document.getElementById('unlockForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  verifyGiftPassword();
+});
+
+function particle(){
+  let el=document.createElement('span');
+  el.className='particle';
+  el.textContent=['💗','🌸','✨','💕','🌷','💖'][Math.floor(Math.random()*6)];
+  el.style.setProperty('--x',Math.random()*100+'vw');
+  el.style.setProperty('--drift',(Math.random()*240-120)+'px');
+  el.style.setProperty('--dur',(3+Math.random()*3)+'s');
+  el.style.setProperty('--size',(16+Math.random()*23)+'px');
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),6500);
+}
+for(let s=0;s<16;s++){
+  const sp=document.createElement('div'); sp.className='sparkle'; sp.textContent='✦';
+  sp.style.left=Math.random()*100+'vw'; sp.style.top=Math.random()*100+'vh';
+  sp.style.animationDelay=(Math.random()*3)+'s'; document.body.appendChild(sp);
+}
+function revealGift(){
+  if(busy) return; busy=true; gift.classList.add('open');safeSound(783.99,.55,.045);
+  for(let i=0;i<70;i++) timers.push(setTimeout(particle,i*45));
+  timers.push(setTimeout(()=>{start.style.display='none';card.style.display='block';busy=false},1150));
+}
+gift.addEventListener('click',promptPassword);
+gift.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();promptPassword();}});
+document.getElementById('again').addEventListener('click',()=>{
+  timers.forEach(clearTimeout); timers=[]; card.style.display='none'; start.style.display='block'; gift.classList.remove('open'); busy=false;
+});
+</script>
+</body>
+</html>
